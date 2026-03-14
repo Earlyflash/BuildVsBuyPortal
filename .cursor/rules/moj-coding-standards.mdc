@@ -1,0 +1,62 @@
+---
+description: MoJ coding, design, testing, security, naming, licensing and AI governance
+alwaysApply: false
+---
+
+# MoJ Coding and Governance Standards
+
+## General coding standards
+
+- Comment only where necessary; prefer self-explanatory code.
+- camelCase for variables, PascalCase for classes.
+- Avoid hard-coded values; use configuration or constants.
+- Max line length 120 characters.
+- Meaningful names for variables, classes, methods.
+- Follow language-specific style guides (e.g. PEP 8 for Python, Google Java style for Java).
+
+## Version control and branching
+
+Use GitHub for all projects. Branching: feature/* for features, develop for integration, main for production-ready code.
+Commit messages: include ticket/issue reference; format type(scope): description (e.g. feat(auth): add JWT authentication); imperative mood.
+Mandatory code review before merging to main (readability, test coverage, security).
+
+## Design standards
+
+Apply SOLID: single responsibility, open/closed, Liskov substitution, interface segregation, dependency inversion.
+Use design patterns where appropriate (e.g. Factory, Observer). Document architecture with UML for complex systems.
+APIs: version (e.g. /v1/users), use OpenAPI/Swagger, RESTful design.
+
+## Testing standards
+
+Code reviews mandatory before merge. Integration tests for major workflows. Use automated frameworks (e.g. JUnit, PyTest).
+Confirm unit test coverage for critical modules with technical lead. Tests and assertions must be meaningful.
+
+## Security standards
+
+Regular vulnerability scans (e.g. OWASP, SonarQube). Keep dependencies updated.
+Secure auth (OAuth 2.0, JWT). Encrypt sensitive data at rest (AES 256) and in transit (TLS).
+Parameterised queries to prevent SQL injection. Validate all relevant inputs (server and client).
+
+## Deployment and CI/CD
+
+CI with automated tests on every commit. CD for staging. Deploy to staging before production.
+Keep environment-specific config secure (e.g. Azure Key Vault). Use GitHub Actions or Azure DevOps.
+
+## Naming things
+
+Names must be self-descriptive. Avoid puns, uncommon acronyms, version numbers, or brand names that obscure purpose.
+Use the same name consistently (e.g. GitHub repo name matches hostname). Prefer: Peoplefinder, Send Money to a Prisoner, Help with Fees.
+Avoid: ambiguous names, internal acronyms (e.g. CCCD, PVB2, DOMIS).
+
+## Licensing software or code
+
+MoJ uses the MIT License. Each repo must include LICENCE or LICENCE.md with full licence text.
+Copyright: "Copyright (c) YYYY Crown Copyright (Ministry of Justice)". Use UK spelling "Licence" where preferred.
+When reusing others' work, provide proper attribution in the licence file.
+
+## AI tooling and governance
+
+Use only MoJ-approved AI tools (e.g. GitHub Copilot for engineers; follow current approved list).
+No ingestion of personal data or sensitive security data by AI unless TDA-approved.
+Review all AI-generated outputs for accuracy; apply in line with organisational guidance.
+Human in the loop: clear accountability; document AI use; maintain transparency and auditability.

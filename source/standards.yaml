@@ -1,0 +1,237 @@
+# MoJ AI Coding Environment (AICE) Standards - Single Source of Truth
+# Used to generate Cursor rules, GitHub Copilot instructions, AGENTS.md, and human docs.
+# Source: MoJ Technical Guidance & ministryofjustice GitHub organisation
+
+meta:
+  version: "1.0.0"
+  description: "Ministry of Justice AI Coding Environment standards for Cursor, Copilot, and other AICE tools"
+
+canonical_sources:
+  - title: "MoJ Technical Guidance"
+    url: "https://technical-guidance.service.justice.gov.uk/"
+  - title: "Justice Digital software engineering standards"
+    url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-software-engineering-standards.html"
+  - title: "Justice Digital front end engineering standards"
+    url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-front-end-engineering-standards.html"
+  - title: "Development Principles"
+    url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+  - title: "Frontend Development Principles"
+    url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/frontend-development-principles.html"
+  - title: "Naming things"
+    url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/naming-things.html"
+  - title: "Licensing software or code"
+    url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/licencing-software-or-code.html"
+  - title: "MOJ Engineering AI Governance Framework"
+    url: "https://technical-guidance.service.justice.gov.uk/documentation/governance/ai-governance-framework.html"
+  - title: "ministryofjustice GitHub"
+    url: "https://github.com/ministryofjustice"
+  - title: "Template repository"
+    url: "https://github.com/ministryofjustice/template-repository"
+
+# PII and security - always apply
+global_rules:
+  - id: pii-and-security
+    title: "PII and GitHub – Never upload PII"
+    source_url: "https://technical-guidance.service.justice.gov.uk/"
+    content: |
+      **Critical**: Never upload Personally Identifiable Information (PII) to any MoJ GitHub repository.
+      PII includes birthdate, race, passport/NI number, or any data that could identify an individual.
+      Keep secrets separate from source code and never commit them.
+
+# Principles (always apply or high-level)
+principles:
+  - id: share-knowledge
+    title: "Share the knowledge"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    content: |
+      If you have unique knowledge, share it. Use GitHub flow: small, short-lived branches.
+      All non-throwaway code must be reviewed. Package reusable work (e.g. PyPI, rubygems) and share via MoJ Reusables where appropriate.
+  - id: correct-clear-concise
+    title: "Code should be correct, clear, concise – in that order"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    content: |
+      Correct means provably correct – with tests. All fixes and new features must include tests.
+      Choose clarity over cleverness; avoid monkey-patching and meta-programming unless justified.
+      DRY: apply the Rule of Three for duplication. Less code is better, but not at the expense of clarity.
+  - id: optimize-for-change
+    title: "Optimize for change"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    content: |
+      Focus on making code easy to change. Don't prematurely optimize – choose clarity over performance unless there is a serious performance issue.
+  - id: something-simple-exists
+    title: "Something simple which exists is better than a perfect solution which doesn't"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    content: |
+      Get it done, get it in front of users, learn early. Don't over-engineer. Follow Least Surprise.
+      Don't roll your own crypto. Handle exceptions at the app level. Use process concurrency over threading unless there is good reason.
+  - id: everything-fails
+    title: "Everything fails, all of the time"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    content: |
+      Code defensively when calling other services. Every HTTP call can error or hang – handle failures and fail fast.
+      Don't let long-running external calls harm user experience.
+  - id: other-developers-are-users
+    title: "Other developers are users too"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    content: |
+      If you have to explain how your code works, it's not clear enough. Comments explain *why*, not *how*.
+      Commit messages: follow GDS guidance (e.g. type(scope): description). APIs need designing for usability. Don't pollute the global namespace.
+  - id: think-smaller
+    title: "Think smaller"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    content: |
+      Single Responsibility Principle. Keep views, controllers, models simple; keep methods short.
+      Many small simple things are better than one big complex thing. Consider Null Object, Facade, Form Objects, Sandi Metz's rules.
+  - id: names-have-power
+    title: "Names have power – use them wisely"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/naming-things.html"
+    content: |
+      Don't be cute or jokey. Names convey meaning; well-named functions and variables can remove the need for comments.
+      Avoid meaningless names (obj, result, foo). Use single-letter variables only for well-known maths (e.g. e = mc²) or when meaning is clear.
+      Names should be self-descriptive. Avoid puns, uncommon acronyms, version numbers, or brand names in ways that obscure purpose.
+  - id: composition-over-inheritance
+    title: "Composition over inheritance"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    content: |
+      Prefer 'has-a' over 'is-a' (e.g. Car has-a Motor, not Car is-a MotorVehicle). Inheritance trees often create tech debt.
+
+# Coding standards (language/file-specific where useful)
+coding_standards:
+  - id: general-coding
+    title: "General coding standards"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-software-engineering-standards.html"
+    globs: null  # always apply when generating general rule
+    content: |
+      - Comment only where necessary; prefer self-explanatory code.
+      - camelCase for variables, PascalCase for classes.
+      - Avoid hard-coded values; use configuration or constants.
+      - Max line length 120 characters.
+      - Meaningful names for variables, classes, methods.
+      - Follow language-specific style guides (e.g. PEP 8 for Python, Google Java style for Java).
+  - id: version-control
+    title: "Version control and branching"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-software-engineering-standards.html"
+    content: |
+      Use GitHub for all projects. Branching: feature/* for features, develop for integration, main for production-ready code.
+      Commit messages: include ticket/issue reference; format type(scope): description (e.g. feat(auth): add JWT authentication); imperative mood.
+      Mandatory code review before merging to main (readability, test coverage, security).
+  - id: design-standards
+    title: "Design standards"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-software-engineering-standards.html"
+    content: |
+      Apply SOLID: single responsibility, open/closed, Liskov substitution, interface segregation, dependency inversion.
+      Use design patterns where appropriate (e.g. Factory, Observer). Document architecture with UML for complex systems.
+      APIs: version (e.g. /v1/users), use OpenAPI/Swagger, RESTful design.
+  - id: testing-standards
+    title: "Testing standards"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-software-engineering-standards.html"
+    content: |
+      Code reviews mandatory before merge. Integration tests for major workflows. Use automated frameworks (e.g. JUnit, PyTest).
+      Confirm unit test coverage for critical modules with technical lead. Tests and assertions must be meaningful.
+  - id: security-standards
+    title: "Security standards"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-software-engineering-standards.html"
+    content: |
+      Regular vulnerability scans (e.g. OWASP, SonarQube). Keep dependencies updated.
+      Secure auth (OAuth 2.0, JWT). Encrypt sensitive data at rest (AES 256) and in transit (TLS).
+      Parameterised queries to prevent SQL injection. Validate all relevant inputs (server and client).
+  - id: cicd
+    title: "Deployment and CI/CD"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-software-engineering-standards.html"
+    content: |
+      CI with automated tests on every commit. CD for staging. Deploy to staging before production.
+      Keep environment-specific config secure (e.g. Azure Key Vault). Use GitHub Actions or Azure DevOps.
+
+# Frontend-specific (globs for .tsx, .jsx, .css, .html etc.)
+frontend_standards:
+  - id: html-css
+    title: "HTML and CSS standards"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-front-end-engineering-standards.html"
+    globs: "**/*.{html,css,scss,vue,tsx,jsx}"
+    content: |
+      Use semantic HTML and accessibility attributes (ARIA). Minimise !important; maintain specificity hierarchy.
+      Avoid inline styles; use external stylesheets or CSS-in-JS. Keep CSS modular (e.g. BEM, CSS Modules, Tailwind).
+  - id: js-ts
+    title: "JavaScript/TypeScript frontend"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-front-end-engineering-standards.html"
+    globs: "**/*.{ts,tsx,js,jsx,vue}"
+    content: |
+      Enforce strict typing with TypeScript. Use ES6+. Implement error handling; avoid silent failures.
+      Avoid global variables; use modules or closures. Use ESLint. Prefer React, Angular, or Vue as approved; state management Redux or Zustand.
+  - id: accessibility
+    title: "Accessibility (WCAG AA)"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/justice-digital-front-end-engineering-standards.html"
+    globs: "**/*.{html,tsx,jsx,vue,css}"
+    content: |
+      Meet WCAG 2.2 Level AA (legal requirement for public sector). Use GOV.UK Design System components.
+      Alt text for images, ARIA for dynamic elements, keyboard navigation, focus management. Test with screen readers and automated tools (Axe, Pa11y, WAVE).
+      Support browser zoom to 400%; logical headings; meaningful link text; descriptive page titles; colour contrast.
+  - id: gov-service-manual
+    title: "Government Service Manual"
+    source_url: "https://www.gov.uk/service-manual"
+    content: |
+      Follow the Government Service Design Manual. Services are assessed against it before going live.
+      Use verified browsers list; responsive design; progressive enhancement.
+
+# Naming
+naming_standards:
+  - id: naming-things
+    title: "Naming things"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/naming-things.html"
+    content: |
+      Names must be self-descriptive. Avoid puns, uncommon acronyms, version numbers, or brand names that obscure purpose.
+      Use the same name consistently (e.g. GitHub repo name matches hostname). Prefer: Peoplefinder, Send Money to a Prisoner, Help with Fees.
+      Avoid: ambiguous names, internal acronyms (e.g. CCCD, PVB2, DOMIS).
+
+# Licensing
+licensing_standards:
+  - id: licensing
+    title: "Licensing software or code"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/standards/licencing-software-or-code.html"
+    content: |
+      MoJ uses the MIT License. Each repo must include LICENCE or LICENCE.md with full licence text.
+      Copyright: "Copyright (c) YYYY Crown Copyright (Ministry of Justice)". Use UK spelling "Licence" where preferred.
+      When reusing others' work, provide proper attribution in the licence file.
+
+# AI governance (for use of AI tools when generating code)
+ai_governance:
+  - id: ai-governance
+    title: "AI tooling and governance"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/governance/ai-governance-framework.html"
+    content: |
+      Use only MoJ-approved AI tools (e.g. GitHub Copilot for engineers; follow current approved list).
+      No ingestion of personal data or sensitive security data by AI unless TDA-approved.
+      Review all AI-generated outputs for accuracy; apply in line with organisational guidance.
+      Human in the loop: clear accountability; document AI use; maintain transparency and auditability.
+
+# Python-specific
+python_standards:
+  - id: python-exceptions
+    title: "Python – exceptions at application level"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    globs: "**/*.py"
+    content: |
+      Don't swallow unexpected or base-type exceptions in libraries; let them propagate to the application.
+      Always specify exception type in try/except unless there is good reason not to.
+  - id: python-pep8
+    title: "Python – PEP 8 and Zen of Python"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    globs: "**/*.py"
+    content: |
+      Follow PEP 8. Consider the Zen of Python (readability, explicit over implicit, simple over complex).
+
+# Ruby-specific
+ruby_standards:
+  - id: ruby-exceptions
+    title: "Ruby – exceptions at application level"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    globs: "**/*.rb"
+    content: |
+      Handle exceptions at application level, not in libraries. Exceptions are for unexpected/unhandleable, not flow control.
+      Always put specific exception types in rescue statements unless there is good reason not to.
+  - id: ruby-meta
+    title: "Ruby – meta-programming with caution"
+    source_url: "https://technical-guidance.service.justice.gov.uk/documentation/principles/development-principles.html"
+    globs: "**/*.rb"
+    content: |
+      Use meta-programming with extreme caution; it makes code harder to read, debug, and can cause performance issues (e.g. method cache purging).
