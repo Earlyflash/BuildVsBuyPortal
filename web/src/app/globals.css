@@ -55,19 +55,16 @@
 }
 
 .app-matrix-wrap {
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 8px;
-  align-items: stretch;
+  display: block;
   background: transparent;
   border: 0;
   padding: 0;
 }
 
 .app-matrix-content {
+  --y-axis-width: 56px;
   --row-label-width: 80px;
   --matrix-gap: 12px;
-  --matrix-cell-height: 112px;
   display: grid;
   grid-template-rows: auto auto auto;
   gap: 10px;
@@ -84,8 +81,8 @@
 .app-matrix-axis--x {
   text-align: center;
   margin-top: 2px;
-  margin-left: calc(var(--row-label-width) + var(--matrix-gap));
-  width: calc(100% - (var(--row-label-width) + var(--matrix-gap)));
+  margin-left: calc(var(--y-axis-width) + var(--row-label-width) + (var(--matrix-gap) * 2));
+  width: calc(100% - (var(--y-axis-width) + var(--row-label-width) + (var(--matrix-gap) * 2)));
 }
 
 .app-matrix-axis--y {
@@ -93,8 +90,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: start;
-  height: calc((var(--matrix-cell-height) * 2) + var(--matrix-gap));
+  width: var(--y-axis-width);
+  align-self: stretch;
 }
 
 .app-matrix-axis--y-text {
@@ -114,7 +111,7 @@
   border: 1px solid #b1b4b6;
   background: #ffffff;
   padding: 12px;
-  min-height: var(--matrix-cell-height);
+  min-height: 112px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,7 +126,7 @@
 
 .app-matrix-grid-wrap {
   display: grid;
-  grid-template-columns: var(--row-label-width) 1fr;
+  grid-template-columns: var(--y-axis-width) var(--row-label-width) 1fr;
   gap: var(--matrix-gap);
 }
 
@@ -156,8 +153,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--matrix-gap);
-  margin-left: calc(var(--row-label-width) + var(--matrix-gap));
-  width: calc(100% - (var(--row-label-width) + var(--matrix-gap)));
+  margin-left: calc(var(--y-axis-width) + var(--row-label-width) + (var(--matrix-gap) * 2));
+  width: calc(100% - (var(--y-axis-width) + var(--row-label-width) + (var(--matrix-gap) * 2)));
 }
 
 .app-matrix-x-label {
@@ -185,4 +182,12 @@
 .app-result-section--spectrum {
   background: #eef7ff;
   border-color: #1d70b8;
+}
+
+.app-rationale-markdown > :first-child {
+  margin-top: 0;
+}
+
+.app-rationale-markdown > :last-child {
+  margin-bottom: 0;
 }
