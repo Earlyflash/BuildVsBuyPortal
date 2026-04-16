@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import type {
@@ -93,6 +94,7 @@ export function WizardProvider({ children }: { children: ReactNode }) {
   const [inputs, setInputsState] = useState<AssessmentInputs>(EMPTY_INPUTS);
   const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const hasUserEditedRef = useRef(false);
 
   useEffect(() => {
     let isActive = true;
@@ -102,12 +104,10 @@ export function WizardProvider({ children }: { children: ReactNode }) {
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<AssessmentInputs>;
         const hydrated = withDefaults(parsed);
-        queueMicrotask(() => {
-          if (isActive) {
-            setInputsState(hydrated);
-            setHasHydratedDraft(true);
-          }
-        });
+        if (isActive) {
+          setInputsState((current) => (hasUserEditedRef.current ? current : hydrated));
+          setHasHydratedDraft(true);
+        }
         return () => {
           isActive = false;
         };
@@ -116,11 +116,9 @@ export function WizardProvider({ children }: { children: ReactNode }) {
       // corrupt storage -- start fresh
     }
 
-    queueMicrotask(() => {
-      if (isActive) {
-        setHasHydratedDraft(true);
-      }
-    });
+    if (isActive) {
+      setHasHydratedDraft(true);
+    }
 
     return () => {
       isActive = false;
@@ -144,6 +142,7 @@ export function WizardProvider({ children }: { children: ReactNode }) {
   const isLastStep = stepIndex === WIZARD_STEPS.length - 1;
 
   const setInputs = useCallback((partial: Partial<AssessmentInputs>) => {
+    hasUserEditedRef.current = true;
     setInputsState((prev) => ({ ...prev, ...partial }));
   }, []);
 
@@ -152,6 +151,7 @@ export function WizardProvider({ children }: { children: ReactNode }) {
       bucket: K,
       values: Partial<AssessmentInputs[K]>,
     ) => {
+      hasUserEditedRef.current = true;
       setInputsState((prev) => ({
         ...prev,
         [bucket]: { ...(prev[bucket] as unknown as Record<string, unknown>), ...values },
