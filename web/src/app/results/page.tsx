@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import type {
   Recommendation,
@@ -21,6 +20,32 @@ const BAND_DESCRIPTIONS: Record<RecommendationBand, string> = {
   Build:
     "The assessment suggests building a custom solution is likely the best approach for this project.",
 };
+
+const FALLBACK_REASON_MESSAGES: Record<string, string> = {
+  LLM_OPT_OUT:
+    "AI narrative generation was not selected for this assessment.",
+  LLM_RATE_LIMITED:
+    "AI narrative generation is temporarily rate-limited. The deterministic fallback is shown instead.",
+  SENSITIVITY_BLOCKED:
+    "The submission may contain sensitive data, so AI narrative generation was blocked by policy.",
+  LLM_NOT_CONFIGURED:
+    "AI narrative generation is not configured in this environment.",
+  UPSTREAM_UNAVAILABLE:
+    "The AI narrative provider is currently unavailable.",
+  UPSTREAM_TIMEOUT:
+    "The AI narrative provider timed out.",
+  UPSTREAM_EMPTY:
+    "The AI narrative provider returned no content.",
+  UPSTREAM_FAILURE:
+    "An AI narrative error occurred.",
+};
+
+const SHOW_PROMPT_DETAILS =
+  process.env.NODE_ENV !== "production" &&
+  process.env.NEXT_PUBLIC_SHOW_PROMPT_DETAILS === "true";
+const ALLOW_PROMPT_EXPORT =
+  process.env.NODE_ENV !== "production" &&
+  process.env.NEXT_PUBLIC_ALLOW_PROMPT_EXPORT === "true";
 
 type MatrixPole = "Buy" | "Build";
 
@@ -195,7 +220,10 @@ function NarrativeMarkdown({ content }: { content: string }) {
   );
 }
 
-function exportAsMarkdown(rec: Recommendation): string {
+function exportAsMarkdown(
+  rec: Recommendation,
+  includePromptInExport: boolean,
+): string {
   const {
     scoring,
     rationale,
@@ -230,26 +258,53 @@ function exportAsMarkdown(rec: Recommendation): string {
     md += `\nFallback reason: ${rationaleError}\n`;
   }
 
-  md += `\n## Prompt used for narrative generation\n`;
-  md += `${rationalePrompt}\n`;
+  if (includePromptInExport && rationalePrompt.trim().length > 0) {
+    md += `\n## Prompt used for narrative generation\n`;
+    md += `${rationalePrompt}\n`;
+  }
 
   return md;
 }
 
 export default function ResultsPage() {
-  const router = useRouter();
   const [result, setResult] = useState<Recommendation | null>(null);
+  const [hasHydratedResult, setHasHydratedResult] = useState(false);
 
   useEffect(() => {
+    let isActive = true;
+
     try {
       const stored = sessionStorage.getItem("buyVsBuild_result");
       if (stored) {
-        setResult(JSON.parse(stored));
+        const parsed = JSON.parse(stored) as Recommendation;
+        queueMicrotask(() => {
+          if (isActive) {
+            setResult(parsed);
+            setHasHydratedResult(true);
+          }
+        });
+        return () => {
+          isActive = false;
+        };
       }
     } catch {
       // corrupt data
     }
+
+    queueMicrotask(() => {
+      if (isActive) {
+        setHasHydratedResult(true);
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
   }, []);
+
+  if (!hasHydratedResult) {
+    return null;
+  }
 
   if (!result) {
     return (
@@ -283,10 +338,16 @@ export default function ResultsPage() {
     projectName,
   } = result;
   const bandColour = BAND_COLOURS[scoring.band];
+  const fallbackMessage =
+    rationaleError && FALLBACK_REASON_MESSAGES[rationaleError]
+      ? FALLBACK_REASON_MESSAGES[rationaleError]
+      : "Gemini response unavailable; showing fallback narrative.";
+  const canShowPromptDetails =
+    SHOW_PROMPT_DETAILS && rationalePrompt.trim().length > 0;
 
   function handleExport() {
     if (!result) return;
-    const md = exportAsMarkdown(result);
+    const md = exportAsMarkdown(result, ALLOW_PROMPT_EXPORT);
     const blob = new Blob([md], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -467,8 +528,7 @@ export default function ResultsPage() {
             </span>
             <strong className="govuk-warning-text__text">
               <span className="govuk-warning-text__assistive">Warning</span>
-              Gemini response unavailable; showing fallback narrative.
-              {rationaleError ? ` (${rationaleError})` : ""}
+              {fallbackMessage}
             </strong>
           </div>
         )}
@@ -483,24 +543,26 @@ export default function ResultsPage() {
           a final decision.
         </p>
 
-        <details className="govuk-details" data-module="govuk-details">
-          <summary className="govuk-details__summary">
-            <span className="govuk-details__summary-text">
-              Show AI prompt
-            </span>
-          </summary>
-          <div className="govuk-details__text">
-            <p className="govuk-body-s">
-              This is the exact prompt sent to the narrative generator.
-            </p>
-            <div
-              className="govuk-inset-text"
-              style={{ whiteSpace: "pre-wrap", marginBottom: 0 }}
-            >
-              {rationalePrompt}
+        {canShowPromptDetails && (
+          <details className="govuk-details" data-module="govuk-details">
+            <summary className="govuk-details__summary">
+              <span className="govuk-details__summary-text">
+                Show AI prompt
+              </span>
+            </summary>
+            <div className="govuk-details__text">
+              <p className="govuk-body-s">
+                This is the exact prompt sent to the narrative generator.
+              </p>
+              <div
+                className="govuk-inset-text"
+                style={{ whiteSpace: "pre-wrap", marginBottom: 0 }}
+              >
+                {rationalePrompt}
+              </div>
             </div>
-          </div>
-        </details>
+          </details>
+        )}
 
         <hr className="govuk-section-break govuk-section-break--l govuk-section-break--visible" />
 

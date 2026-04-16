@@ -32,6 +32,7 @@ export interface DecisionGateInputs {
 export interface AssessmentInputs {
   projectName: string;
   projectDescription: string;
+  llmOptIn: boolean;
   strategicValue: StrategicValueInputs;
   deliveryConstraints: DeliveryConstraintInputs;
   economicsAndRisk: EconomicsAndRiskInputs;

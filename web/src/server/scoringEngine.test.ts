@@ -14,6 +14,7 @@ function makeInputs(
   return {
     projectName: "Test Project",
     projectDescription: "A test project",
+    llmOptIn: false,
     strategicValue: {
       competitiveDifferentiation: 3,
       capabilityBuilding: 3,

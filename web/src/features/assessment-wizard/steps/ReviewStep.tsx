@@ -54,6 +54,12 @@ export function ReviewStep() {
             {inputs.projectDescription || "(Not provided)"}
           </dd>
         </div>
+        <div className="govuk-summary-list__row">
+          <dt className="govuk-summary-list__key">AI narrative consent</dt>
+          <dd className="govuk-summary-list__value">
+            {inputs.llmOptIn ? "Consented" : "Not consented"}
+          </dd>
+        </div>
       </dl>
 
       {Object.entries(grouped).map(([bucket, criteria]) => (

@@ -49,6 +49,18 @@ GEMINI_API_KEY=your_key_here
 # GEMINI_MODEL=gemini-2.0-flash
 ```
 
+Security control env vars (optional, defaults are applied if omitted):
+
+```bash
+ASSESS_RATE_LIMIT_WINDOW_MS=60000
+ASSESS_RATE_LIMIT_MAX_REQUESTS=30
+LLM_RATE_LIMIT_WINDOW_MS=60000
+LLM_RATE_LIMIT_MAX_REQUESTS=10
+EXPOSE_RATIONALE_PROMPT=false
+NEXT_PUBLIC_SHOW_PROMPT_DETAILS=false
+NEXT_PUBLIC_ALLOW_PROMPT_EXPORT=false
+```
+
 Then run:
 
 ```bash
@@ -82,6 +94,16 @@ npm run build
 - Never commit API keys.
 - `.env.local` is ignored by `.gitignore`.
 - Gemini key is read server-side only.
+- AI narratives are opt-in and blocked for high-sensitivity inputs.
+- Provider error details are not exposed to end users.
+
+### Key rotation runbook
+
+1. Generate a new Gemini key with least privilege in the provider console.
+2. Update deployment secret store and local `web/.env.local`.
+3. Revoke the previous key immediately after rollout.
+4. Verify by running one assessment with AI opt-in enabled.
+5. Review usage telemetry for abnormal request spikes.
 
 ## Coding standards
 

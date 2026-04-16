@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,12 +29,12 @@ export default function RootLayout({
         <header className="govuk-header" role="banner" data-module="govuk-header">
           <div className="govuk-header__container govuk-width-container">
             <div className="govuk-header__content">
-              <a
+              <Link
                 href="/"
                 className="govuk-header__link govuk-header__service-name"
               >
                 Buy vs Build Assessment
-              </a>
+              </Link>
             </div>
           </div>
         </header>

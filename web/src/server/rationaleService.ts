@@ -1,9 +1,15 @@
 import type { ScoringResult } from "@/domain/recommendation";
+import {
+  classifySensitivity,
+  redactSensitiveTokens,
+} from "@/server/security/redaction";
 
 interface RationaleRequest {
   projectName: string;
   projectDescription: string;
   scoring: ScoringResult;
+  llmOptIn: boolean;
+  fallbackReasonOverride?: string;
 }
 
 export interface RationaleResult {
@@ -17,7 +23,49 @@ export interface RationaleResult {
 export async function generateRationale(
   request: RationaleRequest,
 ): Promise<RationaleResult> {
-  const prompt = buildPrompt(request);
+  const redactedProjectName = redactSensitiveTokens(request.projectName);
+  const redactedProjectDescription = redactSensitiveTokens(
+    request.projectDescription,
+  );
+  const prompt = buildPrompt({
+    ...request,
+    projectName: redactedProjectName,
+    projectDescription: redactedProjectDescription,
+  });
+
+  if (request.fallbackReasonOverride) {
+    return {
+      text: buildFallbackRationale(request),
+      prompt,
+      source: "fallback",
+      status: "fallback",
+      error: request.fallbackReasonOverride,
+    };
+  }
+
+  if (!request.llmOptIn) {
+    return {
+      text: buildFallbackRationale(request),
+      prompt,
+      source: "fallback",
+      status: "fallback",
+      error: "LLM_OPT_OUT",
+    };
+  }
+
+  const sensitivity = classifySensitivity(
+    `${request.projectName}\n${request.projectDescription}`,
+  );
+  if (sensitivity === "high") {
+    return {
+      text: buildFallbackRationale(request),
+      prompt,
+      source: "fallback",
+      status: "fallback",
+      error: "SENSITIVITY_BLOCKED",
+    };
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return {
@@ -25,7 +73,7 @@ export async function generateRationale(
       prompt,
       source: "fallback",
       status: "fallback",
-      error: "Missing GEMINI_API_KEY",
+      error: "LLM_NOT_CONFIGURED",
     };
   }
 
@@ -54,13 +102,13 @@ export async function generateRationale(
     );
 
     if (!response.ok) {
-      const errorBody = await response.text();
+      await response.text();
       return {
         text: buildFallbackRationale(request),
         prompt,
         source: "fallback",
         status: "fallback",
-        error: `Gemini API error (${response.status}): ${errorBody.slice(0, 250)}`,
+        error: "UPSTREAM_UNAVAILABLE",
       };
     }
 
@@ -84,7 +132,7 @@ export async function generateRationale(
       prompt,
       source: "fallback",
       status: "fallback",
-      error: "Gemini returned no text content",
+      error: "UPSTREAM_EMPTY",
     };
   } catch (error) {
     return {
@@ -92,7 +140,10 @@ export async function generateRationale(
       prompt,
       source: "fallback",
       status: "fallback",
-      error: error instanceof Error ? error.message : "Unknown Gemini failure",
+      error:
+        error instanceof Error && error.name === "AbortError"
+          ? "UPSTREAM_TIMEOUT"
+          : "UPSTREAM_FAILURE",
     };
   } finally {
     clearTimeout(timeout);

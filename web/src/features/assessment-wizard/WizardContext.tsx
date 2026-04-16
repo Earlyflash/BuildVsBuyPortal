@@ -19,6 +19,7 @@ const STORAGE_KEY = "buyVsBuild_draft";
 const EMPTY_INPUTS: AssessmentInputs = {
   projectName: "",
   projectDescription: "",
+  llmOptIn: false,
   strategicValue: {
     competitiveDifferentiation: 3,
     capabilityBuilding: 3,
@@ -90,27 +91,53 @@ const WizardContext = createContext<WizardState | null>(null);
 
 export function WizardProvider({ children }: { children: ReactNode }) {
   const [inputs, setInputsState] = useState<AssessmentInputs>(EMPTY_INPUTS);
+  const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
+    let isActive = true;
+
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<AssessmentInputs>;
-        setInputsState(withDefaults(parsed));
+        const hydrated = withDefaults(parsed);
+        queueMicrotask(() => {
+          if (isActive) {
+            setInputsState(hydrated);
+            setHasHydratedDraft(true);
+          }
+        });
+        return () => {
+          isActive = false;
+        };
       }
     } catch {
       // corrupt storage -- start fresh
     }
+
+    queueMicrotask(() => {
+      if (isActive) {
+        setHasHydratedDraft(true);
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   useEffect(() => {
+    if (!hasHydratedDraft) {
+      return;
+    }
+
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
     } catch {
       // storage full -- continue without persistence
     }
-  }, [inputs]);
+  }, [hasHydratedDraft, inputs]);
 
   const currentStep = WIZARD_STEPS[stepIndex];
   const isFirstStep = stepIndex === 0;
