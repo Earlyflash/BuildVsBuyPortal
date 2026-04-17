@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import "./globals.css";
+import { PostHogPageView } from "./PostHogPageView";
+import { PostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "Buy vs Build Assessment – Ministry of Justice",
@@ -22,9 +25,13 @@ export default function RootLayout({
         />
       </head>
       <body className="govuk-template__body js-enabled">
-        <a href="#main-content" className="govuk-skip-link">
-          Skip to main content
-        </a>
+        <PostHogProvider>
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
+          <a href="#main-content" className="govuk-skip-link">
+            Skip to main content
+          </a>
 
         <header className="govuk-header" role="banner" data-module="govuk-header">
           <div className="govuk-header__container govuk-width-container">
@@ -86,7 +93,8 @@ export default function RootLayout({
               </div>
             </div>
           </div>
-        </footer>
+          </footer>
+        </PostHogProvider>
       </body>
     </html>
   );

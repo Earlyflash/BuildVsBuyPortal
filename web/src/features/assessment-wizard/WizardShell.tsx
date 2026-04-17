@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { usePostHog } from "posthog-js/react";
 import { useWizard } from "./WizardContext";
 import { ProgressBar } from "./ProgressBar";
 import { ProjectDetailsStep } from "./steps/ProjectDetailsStep";
@@ -22,6 +23,7 @@ const STEP_COMPONENTS: Record<string, React.ComponentType> = {
 
 export function WizardShell() {
   const router = useRouter();
+  const posthog = usePostHog();
   const {
     inputs,
     currentStep,
@@ -39,7 +41,26 @@ export function WizardShell() {
   const canProceed =
     currentStep !== "project-details" || inputs.projectName.trim().length > 0;
 
+  useEffect(() => {
+    if (!posthog) return;
+
+    posthog.capture("assessment_step_viewed", {
+      step: currentStep,
+      canProceed,
+      isFirstStep,
+      isLastStep,
+    });
+  }, [posthog, currentStep, canProceed, isFirstStep, isLastStep]);
+
+  function handleContinue() {
+    if (!canProceed) return;
+
+    posthog?.capture("assessment_continue_clicked", { step: currentStep });
+    goNext();
+  }
+
   async function handleSubmit() {
+    posthog?.capture("assessment_submission_started", { step: currentStep });
     setSubmitting(true);
     setError(null);
 
@@ -56,8 +77,12 @@ export function WizardShell() {
 
       const result = await response.json();
       sessionStorage.setItem("buyVsBuild_result", JSON.stringify(result));
+      posthog?.capture("assessment_submission_succeeded");
       router.push("/results");
     } catch (err) {
+      posthog?.capture("assessment_submission_failed", {
+        message: err instanceof Error ? err.message : "Unknown error",
+      });
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSubmitting(false);
@@ -114,7 +139,7 @@ export function WizardShell() {
           ) : (
             <button
               type="button"
-              onClick={goNext}
+              onClick={handleContinue}
               disabled={!canProceed}
               className="govuk-button"
               data-module="govuk-button"

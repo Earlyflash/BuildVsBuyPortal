@@ -1,16 +1,21 @@
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
+const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+const posthogDomainWildcard = "https://*.i.posthog.com";
 
 const scriptSrc = [
   "'self'",
   "'unsafe-inline'",
+  posthogDomainWildcard,
   ...(isDevelopment ? ["'unsafe-eval'"] : []),
 ].join(" ");
 
 const connectSrc = [
   "'self'",
   "https://generativelanguage.googleapis.com",
+  posthogHost,
+  posthogDomainWildcard,
   ...(isDevelopment ? ["ws:", "wss:"] : []),
 ].join(" ");
 

@@ -20,6 +20,11 @@ export interface RationaleResult {
   error: string | null;
 }
 
+function getPositiveIntEnv(name: string, fallback: number): number {
+  const value = Number.parseInt(process.env[name] ?? "", 10);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
 export async function generateRationale(
   request: RationaleRequest,
 ): Promise<RationaleResult> {
@@ -78,8 +83,9 @@ export async function generateRationale(
   }
 
   const model = process.env.GEMINI_MODEL ?? "gemini-3.1-flash-lite-preview";
+  const timeoutMs = getPositiveIntEnv("GEMINI_TIMEOUT_MS", 45_000);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(
